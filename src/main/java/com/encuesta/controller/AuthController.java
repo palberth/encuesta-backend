@@ -12,10 +12,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.util.Collections;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -35,14 +37,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        System.out.println("Intentando autenticar usuario: " + loginRequest.getUsername());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        System.out.println("Autenticación exitosa para: " + loginRequest.getUsername());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication.getName());
 
-
-        Usuario userDetails = (Usuario) authentication.getPrincipal();
+        // Usa UserDetailsImpl como principal
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername()));
     }
 
@@ -58,6 +62,6 @@ public class AuthController {
 
         usuarioRepository.save(usuario);
 
-        return ResponseEntity.ok("Usuario registrado exitosamente!");
+        return ResponseEntity.ok(Collections.singletonMap("message", "Usuario registrado correctamente"));
     }
 }

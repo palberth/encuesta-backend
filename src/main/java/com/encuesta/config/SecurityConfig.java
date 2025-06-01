@@ -23,20 +23,26 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
     private final UsuarioRepository usuarioRepository;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
-    public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler, UsuarioRepository usuarioRepository) {
+    public SecurityConfig(
+        JwtAuthenticationEntryPoint unauthorizedHandler,
+        UsuarioRepository usuarioRepository,
+        UserDetailsServiceImpl userDetailsServiceImpl // <-- inyecta el bean aquí
+    ) {
         this.unauthorizedHandler = unauthorizedHandler;
         this.usuarioRepository = usuarioRepository;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new UserDetailsServiceImpl(usuarioRepository);
+        return userDetailsServiceImpl;
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(userDetailsService());
+        return new JwtAuthenticationFilter(userDetailsServiceImpl);
     }
 
     @Bean
